@@ -1,0 +1,74 @@
+---
+import '../styles/global.css';
+
+// Get current path to highlight active nav link
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { name: 'Dashboard', url: '/' },
+  { name: 'Tastings', url: '/cafes' },
+  { name: 'Media', url: '/media' },
+  { name: 'Recipes', url: '/recipes' },
+  { name: 'Workbench', url: '/builds' },
+  { name: 'Music', url: '/music' }
+];
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Josie's Digital Garden</title>
+</head>
+<body class="bg-surface text-secondary font-sans min-h-screen selection:bg-primary-container selection:text-secondary flex flex-col md:flex-row">
+  
+  <!-- Sidebar Navigation -->
+  <aside class="w-full md:w-64 lg:w-72 bg-surface-container-low border-r border-outline-variant/30 md:h-screen p-6 md:p-10 flex flex-col md:sticky md:top-0 z-50 shadow-sm md:shadow-none shrink-0 overflow-y-auto">
+    <div class="mb-8 md:mb-16">
+      <a href="/" class="block group">
+        <h2 class="text-3xl font-display font-bold tracking-tight text-secondary leading-tight relative inline-block">
+          Josie's <br class="hidden md:block"/> <span class="relative inline-block text-primary">Garden</span>
+        </h2>
+      </a>
+    </div>
+
+    <nav class="flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible pb-4 md:pb-0 hide-scrollbar">
+      {navLinks.map((link) => {
+        // Simple logic for active state: exact match for /, or starts with URL for others
+        const isActive = link.url === '/' ? currentPath === '/' : currentPath.startsWith(link.url);
+        
+        return (
+          <a 
+            href={link.url} 
+            class={`font-sans font-bold text-sm uppercase tracking-widest whitespace-nowrap px-4 py-3 md:px-0 md:py-2 border-b-2 md:border-b-0 md:border-l-4 transition-all duration-300 ${
+              isActive 
+                ? 'text-primary border-primary md:pl-4' 
+                : 'text-secondary/50 border-transparent hover:text-secondary hover:border-outline-variant/50 md:hover:pl-4'
+            }`}
+          >
+            {link.name}
+          </a>
+        );
+      })}
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <div class="flex-1 max-w-7xl mx-auto p-6 md:p-12 lg:py-16 lg:px-16 w-full">
+    <main>
+      <slot />
+    </main>
+  </div>
+  
+  <style>
+    /* Utility to hide scrollbar for horizontal mobile nav */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</body>
+</html>

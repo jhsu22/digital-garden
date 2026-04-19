@@ -1,0 +1,163 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const cafes = await getCollection('cafes').catch(() => []);
+const media = await getCollection('media').catch(() => []);
+const recipes = await getCollection('recipes').catch(() => []);
+const logs = await getCollection('logs').catch(() => []);
+
+const sortByDate = (a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf();
+
+const recentCafes = cafes.sort(sortByDate).slice(0, 3);
+const recentMedia = media.sort(sortByDate).slice(0, 3);
+const recentRecipes = recipes.sort(sortByDate).slice(0, 3);
+const recentLogs = logs.sort(sortByDate).slice(0, 3);
+---
+
+<BaseLayout>
+  <header class="mb-16 relative w-full lg:w-3/4">
+    <h1 class="text-5xl md:text-6xl font-display font-bold tracking-tight text-secondary leading-tight relative z-10">
+      Josie's <span class="relative inline-block">Digital<svg class="absolute -bottom-2 left-0 w-full h-3 text-primary z-[-1]" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,5" stroke="currentColor" stroke-width="4" fill="none" vector-effect="non-scaling-stroke"/></svg></span> Garden
+    </h1>
+    <p class="text-secondary/70 mt-6 text-xl font-medium tracking-wide">Tracking food, media, recipes, builds, and music.</p>
+  </header>
+
+  <!-- Welcome Section -->
+  <section class="mb-16">
+    <div class="bg-surface-container-highest p-8 lg:p-12 relative overflow-hidden flex flex-col md:flex-row justify-between items-start md:items-center">
+      <div class="relative z-10">
+        <h2 class="text-3xl font-display font-bold text-secondary mb-2">Welcome back.</h2>
+        <p class="text-secondary/70 text-lg">Here's the latest from the garden.</p>
+      </div>
+      <div class="mt-6 md:mt-0 px-6 py-4 bg-surface shadow-ambient flex items-center gap-4 relative z-10">
+        <span class="text-xs uppercase tracking-[0.2em] font-bold text-secondary/40">Currently</span>
+        <span class="text-sm font-sans font-medium text-secondary">Listening to <span class="text-primary font-bold">Brat</span></span>
+      </div>
+      <!-- Decorative Scribble -->
+      <svg class="absolute top-0 right-0 w-64 h-64 text-primary/10 transform translate-x-1/4 -translate-y-1/4 z-0" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M 10 50 C 30 10, 70 10, 90 50 C 70 90, 30 90, 10 50" vector-effect="non-scaling-stroke" stroke-dasharray="4 8"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Asymmetric Grid for Categories -->
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+    
+    <!-- Left Column -->
+    <div class="lg:col-span-7 flex flex-col gap-12 lg:gap-16">
+      
+      <!-- Cafes -->
+      <section>
+        <div class="flex justify-between items-end mb-6">
+          <h3 class="text-2xl font-display font-bold text-secondary">Recent Tastings</h3>
+          <a href="/cafes" class="text-xs font-bold text-primary uppercase tracking-widest hover:text-primary-container transition-colors">View All</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          {recentCafes.length > 0 ? recentCafes.map(post => (
+            <a href={`/cafes/${post.slug}`} class="bg-surface-container-low transition-all duration-300 hover:bg-surface-container hover:shadow-ambient flex flex-col group relative overflow-hidden">
+              {post.data.image && (
+                <div class="w-full h-48 bg-surface-container-highest overflow-hidden">
+                  <img src={post.data.image} alt={post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+                </div>
+              )}
+              <div class="p-6 flex justify-between items-center">
+                <div class="relative z-10">
+                  <h4 class="font-display font-bold text-xl text-secondary group-hover:text-primary transition-colors">{post.data.title}</h4>
+                  <p class="text-xs text-secondary/50 mt-1 uppercase tracking-wider">{new Date(post.data.date).toLocaleDateString()}</p>
+                </div>
+                <div class="text-2xl font-display font-bold text-secondary/20 group-hover:text-primary transition-colors relative z-10 transform group-hover:translate-x-2">
+                   →
+                </div>
+              </div>
+            </a>
+          )) : (
+            <div class="p-6 border border-outline-variant/30 text-secondary/50 text-sm italic">No recent tastings.</div>
+          )}
+        </div>
+      </section>
+
+      <!-- Logs -->
+      <section>
+        <div class="flex justify-between items-end mb-6">
+          <h3 class="text-2xl font-display font-bold text-secondary">Workbench Logs</h3>
+          <a href="/builds" class="text-xs font-bold text-primary uppercase tracking-widest hover:text-primary-container transition-colors">View All</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          {recentLogs.length > 0 ? recentLogs.map(post => (
+            <a href={`/logs/${post.slug}`} class="bg-surface-container-low transition-all duration-300 hover:bg-surface-container hover:shadow-ambient flex flex-col group relative overflow-hidden">
+              {post.data.image && (
+                <div class="w-full h-48 bg-surface-container-highest overflow-hidden">
+                  <img src={post.data.image} alt={post.data.project || post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+                </div>
+              )}
+              <div class="p-6 flex justify-between items-center">
+                <div>
+                  <h4 class="font-display font-bold text-xl text-secondary group-hover:text-primary transition-colors">{post.data.project || post.data.title}</h4>
+                  <p class="text-xs text-secondary/50 mt-1 uppercase tracking-wider">{new Date(post.data.date).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </a>
+          )) : (
+            <div class="p-6 border border-outline-variant/30 text-secondary/50 text-sm italic">No recent logs.</div>
+          )}
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Column (Offset) -->
+    <div class="lg:col-span-5 flex flex-col gap-12 lg:gap-16 lg:mt-12">
+      
+      <!-- Media -->
+      <section>
+        <div class="flex justify-between items-end mb-6">
+          <h3 class="text-2xl font-display font-bold text-secondary">Recent Media</h3>
+          <a href="/media" class="text-xs font-bold text-primary uppercase tracking-widest hover:text-primary-container transition-colors">View All</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          {recentMedia.length > 0 ? recentMedia.map(post => (
+            <a href={`/media/${post.slug}`} class="bg-surface-container-highest transition-all duration-300 hover:-translate-y-1 hover:shadow-ambient flex flex-col group relative overflow-hidden">
+              {post.data.image && (
+                <div class="w-full h-48 bg-surface-container overflow-hidden">
+                  <img src={post.data.image} alt={post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+                </div>
+              )}
+              <div class="p-6">
+                <h4 class="font-display font-bold text-lg text-secondary group-hover:text-primary transition-colors">{post.data.title}</h4>
+                <p class="text-xs text-secondary/50 mt-1 uppercase tracking-wider">{post.data.type} • {new Date(post.data.date).toLocaleDateString()}</p>
+              </div>
+            </a>
+          )) : (
+            <div class="p-6 border border-outline-variant/30 text-secondary/50 text-sm italic">No recent media.</div>
+          )}
+        </div>
+      </section>
+
+      <!-- Recipes -->
+      <section>
+        <div class="flex justify-between items-end mb-6">
+          <h3 class="text-2xl font-display font-bold text-secondary">Fresh from the Oven</h3>
+          <a href="/recipes" class="text-xs font-bold text-primary uppercase tracking-widest hover:text-primary-container transition-colors">View All</a>
+        </div>
+        <div class="flex flex-col gap-4">
+          {recentRecipes.length > 0 ? recentRecipes.map(post => (
+            <a href={`/recipes/${post.slug}`} class="bg-surface-container transition-all duration-300 hover:bg-surface-container-highest hover:shadow-ambient flex flex-col group overflow-hidden">
+              {post.data.image && (
+                <div class="w-full h-48 bg-surface-container-low overflow-hidden">
+                  <img src={post.data.image} alt={post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700" />
+                </div>
+              )}
+              <div class="p-6">
+                <h4 class="font-display font-bold text-lg text-secondary group-hover:text-primary transition-colors">{post.data.title}</h4>
+                <p class="text-sm text-secondary/70 mt-3 line-clamp-2 leading-relaxed">{post.data.description}</p>
+              </div>
+            </a>
+          )) : (
+            <div class="p-6 border border-outline-variant/30 text-secondary/50 text-sm italic">No recent recipes.</div>
+          )}
+        </div>
+      </section>
+    </div>
+
+  </div>
+</BaseLayout>

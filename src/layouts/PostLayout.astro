@@ -1,0 +1,47 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+const { frontmatter } = Astro.props;
+---
+
+<BaseLayout>
+  <article class="max-w-none">
+    {frontmatter.image && (
+      <div class="w-full h-[40vh] md:h-[50vh] mb-12 bg-surface-container overflow-hidden">
+        <img src={frontmatter.image} alt={frontmatter.title || frontmatter.project} class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
+      </div>
+    )}
+    
+    <header class="mb-12">
+      {frontmatter.date && (
+        <p class="text-secondary/60 uppercase tracking-[0.2em] font-display font-semibold text-sm mb-4">
+          {new Date(frontmatter.date).toLocaleDateString()}
+        </p>
+      )}
+      <h1 class="text-5xl md:text-7xl font-display font-bold text-secondary mb-4 leading-tight">
+        {frontmatter.title || frontmatter.project}
+      </h1>
+      {frontmatter.description && (
+        <p class="text-xl text-secondary/70 mt-4">{frontmatter.description}</p>
+      )}
+      {frontmatter.prepTime && (
+        <p class="text-md text-secondary/50 uppercase tracking-wider mt-2 font-bold">Prep Time: {frontmatter.prepTime} mins</p>
+      )}
+    </header>
+
+    {frontmatter.ingredients && frontmatter.ingredients.length > 0 && (
+      <div class="mb-12 bg-surface-container p-8">
+        <h2 class="font-display font-bold text-2xl text-secondary mb-4">Ingredients</h2>
+        <ul class="list-disc list-inside space-y-2 text-secondary/80">
+          {frontmatter.ingredients.map((item: string) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <div class="text-lg text-secondary/90 leading-loose space-y-8 prose-headings:font-display prose-headings:font-bold prose-headings:text-secondary prose-a:text-primary hover:prose-a:text-primary-container prose-a:border-b-2 prose-a:border-primary prose-a:transition-colors">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

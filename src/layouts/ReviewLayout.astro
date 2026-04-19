@@ -1,0 +1,139 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { calculateWeightedScore, getCombinedAverage } from '../utils/calculateWeightedScore';
+
+const { frontmatter } = Astro.props;
+const type = frontmatter.type;
+
+const isMedia = ['media', 'cinema', 'anime', 'album'].includes(type);
+
+const josieScore = calculateWeightedScore(type, frontmatter.ratings.josie, 'josie');
+const partnerScore = (frontmatter.ratings.partner && !isMedia)
+  ? calculateWeightedScore(type, frontmatter.ratings.partner, 'partner') 
+  : null;
+const combinedScore = getCombinedAverage(type, frontmatter.ratings.josie, frontmatter.ratings.partner);
+
+const categories = Object.keys(frontmatter.ratings.josie).filter(k => k !== 'overall');
+---
+
+<BaseLayout>
+  <article class="max-w-none">
+    {frontmatter.image && (
+      <div class="w-full h-[40vh] md:h-[50vh] mb-12 bg-surface-container overflow-hidden">
+        <img src={frontmatter.image} alt={frontmatter.title} class="w-full h-full object-cover grayscale-[20%] hover:grayscale-0 transition-all duration-700" />
+      </div>
+    )}
+    
+    <header class="mb-12">
+      <p class="text-secondary/60 uppercase tracking-[0.2em] font-display font-semibold text-sm mb-4">{type} Review</p>
+      <h1 class="text-5xl md:text-7xl font-display font-bold text-secondary mb-4 leading-tight">
+        {frontmatter.title}
+      </h1>
+      {frontmatter.location && (
+        <p class="text-lg text-secondary/70 flex items-center gap-2 font-medium">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          {frontmatter.location}
+        </p>
+      )}
+    </header>
+
+    <div class="bg-surface-container p-6 md:p-10 mb-16 relative">
+      <div class="absolute -top-5 left-6 bg-surface px-6 py-2 shadow-ambient">
+        <h2 class="text-xl font-display font-bold text-secondary flex items-center gap-3">
+          The Verdict
+        </h2>
+      </div>
+      
+      <div class="flex flex-col lg:flex-row items-start justify-between mt-6 gap-8 lg:gap-12">
+        <!-- Overall Scores -->
+        <div class="flex flex-row items-center justify-start gap-6 w-full lg:w-auto">
+          {isMedia ? (
+            <div class="px-2 md:px-6">
+              <div class="text-sm font-display font-semibold text-primary uppercase tracking-[0.2em] mb-4">Final Rating</div>
+              <div class="text-7xl md:text-[7rem] font-display font-bold text-secondary leading-none tracking-tighter">
+                {josieScore.toFixed(1)}<span class="text-4xl text-secondary/30 tracking-normal">/10</span>
+              </div>
+            </div>
+          ) : (
+            <>
+              <!-- Josie's Score -->
+              <div class="text-center relative">
+                <div class="w-24 h-24 bg-surface-container-highest flex items-center justify-center text-3xl font-display font-bold text-secondary mx-auto mb-3 relative z-10">
+                  {josieScore.toFixed(1)}
+                  <svg class="absolute inset-0 w-full h-full text-primary z-[-1] transform scale-125 -rotate-6" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="50" cy="50" r="45" vector-effect="non-scaling-stroke" stroke-dasharray="8 4"/>
+                  </svg>
+                </div>
+                <span class="font-display font-semibold text-xs text-secondary/70 tracking-widest uppercase">Josie</span>
+              </div>
+
+              <!-- Combined Score -->
+              {partnerScore !== null && (
+                <div class="text-center px-6 border-l border-r border-outline-variant/30">
+                  <div class="text-xs font-display font-semibold text-primary uppercase tracking-[0.2em] mb-2">Average</div>
+                  <div class="text-5xl font-display font-bold text-secondary relative inline-block">
+                    {combinedScore.toFixed(1)}<span class="text-2xl text-secondary/40">/10</span>
+                    <svg class="absolute -bottom-2 left-0 w-full h-3 text-primary" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,5" stroke="currentColor" stroke-width="4" fill="none" vector-effect="non-scaling-stroke"/></svg>
+                  </div>
+                </div>
+              )}
+
+              <!-- Sammy's Score -->
+              {partnerScore !== null && (
+                <div class="text-center relative">
+                  <div class="w-24 h-24 backdrop-blur-xl bg-surface/50 shadow-ambient flex items-center justify-center text-3xl font-display font-bold text-secondary mx-auto mb-3">
+                    {partnerScore.toFixed(1)}
+                  </div>
+                  <span class="font-display font-semibold text-xs text-secondary/70 tracking-widest uppercase">Sammy</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        <!-- Category Bars -->
+        {categories.length > 0 && (
+          <div class="flex-1 w-full lg:pl-12 lg:border-l border-outline-variant/30 flex flex-col gap-4 justify-center">
+            {categories.map((category) => {
+              const josieCatScore = frontmatter.ratings.josie[category];
+              const sammyCatScore = (frontmatter.ratings.partner && !isMedia) ? frontmatter.ratings.partner[category] : null;
+
+              return (
+                <div class="flex flex-col gap-1">
+                  <div class="flex justify-between items-end mb-1">
+                    <span class="text-sm font-sans font-semibold text-secondary uppercase tracking-wider">{category}</span>
+                  </div>
+                  
+                  <div class="relative h-6 flex items-stretch w-full">
+                    <!-- Josie's Bar -->
+                    <div class="flex-1 relative bg-surface-container-highest">
+                      <div class="absolute inset-y-0 left-0 bg-primary/40 transition-all duration-500" style={`width: ${josieCatScore * 10}%`}></div>
+                      <div class="absolute inset-0 flex items-center px-3 z-10 text-xs font-bold text-secondary">
+                        {isMedia ? '' : 'Josie: '}{josieCatScore}
+                      </div>
+                    </div>
+                    
+                    <!-- Sammy's Bar -->
+                    {sammyCatScore !== null && (
+                      <div class="flex-1 relative bg-surface-container-highest ml-1">
+                        <div class="absolute inset-y-0 left-0 bg-secondary/20 transition-all duration-500" style={`width: ${sammyCatScore * 10}%`}></div>
+                        <div class="absolute inset-0 flex items-center px-3 z-10 text-xs font-bold text-secondary">
+                          Sammy: {sammyCatScore}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+
+    <!-- The actual review content (MDX) -->
+    <div class="text-lg text-secondary/90 leading-loose space-y-8 prose-headings:font-display prose-headings:font-bold prose-headings:text-secondary prose-a:text-primary hover:prose-a:text-primary-container prose-a:border-b-2 prose-a:border-primary prose-a:transition-colors">
+      <slot />
+    </div>
+  </article>
+</BaseLayout>

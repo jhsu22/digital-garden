@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('recipes').catch(() => []);
+const sortedPosts = posts.sort((a: any, b: any) => 0); // Recipes don't have date, could sort alphabetically or keep insertion order
+---
+
+<BaseLayout>
+  <header class="mb-12 relative w-full lg:w-3/4">
+    <h1 class="text-5xl md:text-7xl font-display font-bold text-secondary mb-4 leading-tight">Recipes</h1>
+    <p class="text-xl text-secondary/70">Things I've cooked and baked.</p>
+  </header>
+
+  <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    {sortedPosts.length > 0 ? sortedPosts.map((post) => {
+      return (
+        <a href={`/recipes/${post.slug}`} class="group relative flex flex-col gap-3">
+          <div class="w-full aspect-[2/3] bg-surface-container-low overflow-hidden shadow-sm group-hover:shadow-ambient transition-all duration-300">
+            {post.data.image ? (
+              <img src={post.data.image} alt={post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center bg-surface-container text-secondary/20 font-display font-bold text-xl uppercase tracking-widest text-center p-4">
+                No Image
+              </div>
+            )}
+          </div>
+          
+          <div>
+            <h2 class="font-display font-bold text-lg text-secondary group-hover:text-primary transition-colors line-clamp-2">{post.data.title}</h2>
+            <p class="text-xs font-sans font-semibold text-secondary/50 uppercase tracking-wider mt-1">Prep: {post.data.prepTime} min</p>
+          </div>
+        </a>
+      );
+    }) : (
+      <div class="col-span-full p-12 border border-outline-variant/30 text-secondary/50 text-lg italic text-center">
+        No posts in this category yet.
+      </div>
+    )}
+  </section>
+</BaseLayout>

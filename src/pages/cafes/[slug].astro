@@ -1,0 +1,21 @@
+---
+import { getCollection } from 'astro:content';
+import ReviewLayout from '../../layouts/ReviewLayout.astro';
+
+// Generate a static route for each cafe review in the collection
+export async function getStaticPaths() {
+  const cafeEntries = await getCollection('cafes');
+  return cafeEntries.map(entry => ({
+    params: { slug: entry.slug }, 
+    props: { entry },
+  }));
+}
+
+// Get the specific entry passed via props
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+---
+
+<ReviewLayout frontmatter={entry.data}>
+  <Content />
+</ReviewLayout>

@@ -1,0 +1,112 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { calculateWeightedScore } from '../../utils/calculateWeightedScore';
+
+const posts = await getCollection('cafes').catch(() => []);
+const sortedPosts = posts.sort((a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf());
+---
+
+<BaseLayout>
+  <header class="mb-12 relative w-full lg:w-3/4">
+    <h1 class="text-5xl md:text-7xl font-display font-bold text-secondary mb-4 leading-tight">Tastings</h1>
+    <p class="text-xl text-secondary/70">Reviews of cafes and restaurants.</p>
+  </header>
+
+  <!-- Filter & Search Bar -->
+  <div class="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-outline-variant/30 pb-4">
+    <div class="flex flex-wrap gap-4">
+      <button class="filter-btn active text-sm font-bold uppercase tracking-wider text-primary border-b-2 border-primary pb-1" data-filter="all">All</button>
+      <button class="filter-btn text-sm font-bold uppercase tracking-wider text-secondary/50 hover:text-secondary pb-1 transition-colors" data-filter="cafe">Cafes</button>
+      <button class="filter-btn text-sm font-bold uppercase tracking-wider text-secondary/50 hover:text-secondary pb-1 transition-colors" data-filter="restaurant">Restaurants</button>
+    </div>
+    <div class="relative w-full md:w-64">
+      <input type="text" id="location-search" placeholder="Search by location..." class="w-full bg-surface-container-low border border-outline-variant/50 px-4 py-2 text-sm text-secondary placeholder:text-secondary/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-sans" />
+      <svg class="absolute right-3 top-2.5 w-4 h-4 text-secondary/30" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+    </div>
+  </div>
+
+  <section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    {sortedPosts.length > 0 ? sortedPosts.map((post) => {
+      const josieScore = calculateWeightedScore(post.data.type, post.data.ratings.josie, 'josie');
+      const sammyScore = post.data.ratings.partner 
+        ? calculateWeightedScore(post.data.type, post.data.ratings.partner, 'partner') 
+        : null;
+
+      return (
+        <a href={`/cafes/${post.slug}`} class="post-card group relative flex flex-col gap-3" data-type={post.data.type} data-location={post.data.location?.toLowerCase() || ""}>
+          <div class="w-full aspect-[2/3] bg-surface-container-low overflow-hidden shadow-sm group-hover:shadow-ambient transition-all duration-300">
+            {post.data.image ? (
+              <img src={post.data.image} alt={post.data.title} class="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-700 group-hover:scale-105" />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center bg-surface-container text-secondary/20 font-display font-bold text-xl uppercase tracking-widest text-center p-4">
+                No Image
+              </div>
+            )}
+          </div>
+          
+          <div>
+            <h2 class="font-display font-bold text-lg text-secondary group-hover:text-primary transition-colors line-clamp-2">{post.data.title}</h2>
+            <p class="text-xs font-sans font-semibold text-secondary/50 uppercase tracking-wider mt-1">{post.data.type}</p>
+            
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-xs font-bold text-secondary bg-surface-container-highest px-2 py-1 rounded-sm">J: {josieScore.toFixed(1)}</span>
+              {sammyScore !== null && (
+                <span class="text-xs font-bold text-secondary bg-surface-container-highest px-2 py-1 rounded-sm">S: {sammyScore.toFixed(1)}</span>
+              )}
+            </div>
+          </div>
+        </a>
+      );
+    }) : (
+      <div class="col-span-full p-12 border border-outline-variant/30 text-secondary/50 text-lg italic text-center">
+        No posts in this category yet.
+      </div>
+    )}
+  </section>
+</BaseLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.filter-btn');
+    const cards = document.querySelectorAll('.post-card');
+    const searchInput = document.getElementById('location-search') as HTMLInputElement;
+
+    let currentFilter = 'all';
+
+    const filterCards = () => {
+      const searchTerm = searchInput.value.toLowerCase();
+
+      cards.forEach(card => {
+        const typeMatch = currentFilter === 'all' || card.getAttribute('data-type') === currentFilter;
+        const locationStr = card.getAttribute('data-location') || '';
+        const searchMatch = locationStr.includes(searchTerm);
+
+        if (typeMatch && searchMatch) {
+          (card as HTMLElement).style.display = 'flex';
+        } else {
+          (card as HTMLElement).style.display = 'none';
+        }
+      });
+    };
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Update active states
+        buttons.forEach(b => {
+          b.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+          b.classList.add('text-secondary/50');
+        });
+        btn.classList.remove('text-secondary/50');
+        btn.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+
+        currentFilter = btn.getAttribute('data-filter') || 'all';
+        filterCards();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', filterCards);
+    }
+  });
+</script>
