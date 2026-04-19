@@ -2,7 +2,7 @@
 title: "Fika Fika Coffee"
 date: 2026-04-19
 type: "cafe"
-image: "https://www.coffeewithjon.blog/uploads/6/1/2/4/61241923/fika-fika-3_orig.jpg&auto=format&fit=crop"
+image: "https://www.coffeewithjon.blog/uploads/6/1/2/4/61241923/fika-fika-3_orig.jpg"
 location: "Arcadia, CA"
 ratings:
   josie:
